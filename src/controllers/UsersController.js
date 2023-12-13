@@ -24,36 +24,30 @@ class UsersController{
     }
     async update(request, response){
         const { name, email, password, oldpassword } = request.body
-        const { id } = request.params
+        const id = request.user.id
 
-        // Verificar se usuário existe
         const [user] = await knex("users").where({ id })
 
         if(!user){
             throw new AppError("Usuário não encontrado.")
         }
 
-        // Verificar se o email já está em uso
         const [userWithUpdatedEmail] = await knex("users").where({ email })
 
         if(userWithUpdatedEmail && userWithUpdatedEmail.id != id){
             throw new AppError("Este e-mail já está em uso.")
         }
 
-        // Atualizar os valores atualizados nas variáveis
         user.name = name ?? user.name
         user.email = email ?? user.email
 
-        // Verificar campo de senha
         if(password && !oldpassword){
             throw new AppError("Você precisa informar a senha antiga para definir a nova senha")
         }
 
-        // Verificar se as senhas conferem
         if(password && oldpassword){
             const checkOldPassword = await compare(oldpassword, user.password)
 
-            // Comparar senha
             if(!checkOldPassword){
                 throw new AppError("A senha antiga não confere")
             }
@@ -61,7 +55,6 @@ class UsersController{
             user.password = await hash(password, 8)
         }
 
-        // Inserir no BD os dados
         await knex("users")
         .where({ id })
         .update({
@@ -74,7 +67,7 @@ class UsersController{
         return response.status(200).json()
     }
     async delete(request, response){
-        const { id } = request.params
+        const id = request.user.id
 
         const [user] = await knex("users").where({ id })
 

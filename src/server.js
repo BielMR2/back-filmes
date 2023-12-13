@@ -1,6 +1,7 @@
 require("express-async-errors")
 const database = require("./database/create_db")
 const AppError = require("./utils/AppError")
+const uploadConfig = require('./Config/uploads')
 
 const express = require("express")
 
@@ -11,6 +12,9 @@ var cors = require('cors')
 
 app.use(cors())
 app.use(express.json())
+
+app.use("/files", express.static(uploadConfig.UPLOAD_FOLDER))
+
 app.use(routes)
 
 database()
